@@ -15,7 +15,7 @@ Bob$GenreID <- as.factor(Bob$GenreID)
 Bob$Difficulty <- as.factor(Bob$Difficulty)
 Bob$Familarity <- as.factor(Bob$Familarity)
 Bob$Interest <- as.factor(Bob$Interest)
-Bob$Value <- as.factor(Bob$Interest)
+Bob$Value <- as.factor(Bob$Value)
 Bob$Boredom <- as.factor(Bob$Boredom)
 Bob$MindWandering <- as.factor(Bob$MindWandering)
 str(Bob)
@@ -63,4 +63,61 @@ plot(Bob$GenreID, Bob$Familarity) #Looks like Genre 2 has a lower famility than 
 plot(Bob$GenreID, Bob$Value) #Looks like means are fine, but Genre 2 is more bottom heavy
 
 
-##probably need to to logistic regression 
+##probably need to to logistic regression becasue that's what the project is about
+#Need to take out NA for Boredom to study Boredom
+
+Bob.Boredom <- Bob[!is.na(Bob$Boredom),]
+View(Bob.Boredom)
+fit <- glm(Boredom ~ GenreID + Difficulty + Familarity + Interest + Value, family = binomial, data = Bob.Boredom)
+summary(fit)
+#Sig are Difficulty2, Familarity2, Interest all except Interst at 5
+
+#Let's throw fit into StepAIC to find the "best"
+library(car)
+library(MASS)
+stepAIC(fit)
+
+#Try fitting "best" model
+AIC.fit <- glm(Boredom ~ Interest, family = binomial, data = Bob.Boredom)
+summary(AIC.fit)
+#AIC 171.6
+#Residual deviance: 159.61  on 366  degrees of freedom
+#Test pvalue
+1-pchisq(159.61,366) #pvalue is 1 so H0
+
+#Presudo Rsquared
+library(rcompanion)
+nag
+
+
+#How to find Rsquared of glm (Or use R package), then you lrm fucntion to make logistic regression. Sicne different coefficents need to check for constant variances
+library(rms)
+fit <- lrm(Boredom ~ Interest, data = Bob.Boredom)
+print(fit) #Rsquared is .584
+
+
+
+######################### Let's try it with Mindwandering instead ###########################
+
+#Take out Mindwandering Na rows
+Bob.MW <- Bob[!is.na(Bob$MindWandering),]
+fit <- glm(MindWandering ~ GenreID + Difficulty + Familarity + Interest + Value, family = binomial, data = Bob.MW)
+summary(fit) #Some Difficutlies cause mindwandering and some Interest cause Mindwandering 
+
+#StepAIC function
+stepAIC(fit)
+
+#AIC says that best model is:
+
+AIC.fit <- glm(formula = MindWandering ~ Difficulty + Interest, family = binomial, 
+               data = Bob.MW)
+summary(AIC.fit)
+#AIC = 373.09
+#Residual deviance: 351.09  on 334  degrees of freedom
+#pvalue 
+1-pchisq(351.09,334) #pvalue = .24, which means H0: model is adequate for the data. 
+
+
+#Try using lrm fucntion
+fit <- lrm(MindWandering ~ Interest + Difficulty, data = Bob.MW)
+print(fit)  #Rsquared is .33

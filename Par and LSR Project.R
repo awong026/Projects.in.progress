@@ -68,15 +68,24 @@ plot(Bob$GenreID, Bob$Familarity) #Looks like Genre 2 has a lower famility than 
 plot(Bob$GenreID, Bob$Value) #Looks like means are fine, but Genre 2 is more bottom heavy
 
 #Model
-gl <- glm(GenreID ~ Familarity + Value, family = binomial, data = Bob)
+gl <- glm(GenreID ~ Difficulty + Familarity + Interest + Value , family = binomial, data = Bob)
 summary(gl)
-#Residual deviance: 485.85  on 381  degrees of freedom
+#aIC 490.56
+#Residual deviance: 480.56  on 379  degrees of freedom
 #pvalue
-1-pchisq(485.85,381) #model is not adquete. 
+1-pchisq(480.56, 379) #model is not adquete for figuring out genre. 
 
-#Model2
-glm<- glm(GenreID ~ Familarity , family = binomial, data = Bob)
-summary(glm)
+#Let's Use stepAIC
+stepAIC(gl)
+
+#AIC's "best" model
+fit.AIC <- glm(formula = GenreID ~ Interest + Value, family = binomial, 
+    data = Bob)
+summary(fit.AIC)
+#AIC 488.49
+#Residual deviance: 482.49  on 381  degrees of freedom
+#pvalue
+1-pchisq(482.49, 381) #Model is not adequate for determining Genre
 
 
 ###########################################################################3
@@ -247,6 +256,7 @@ summary(best.model.nabg) #It's all sig, adj R squared is 1% , F test pvalue is b
 
 library(dplyr)
 data.j<-inner_join(x = MT_rating, y = MT, by = c("SSN", "GenreID"))
+View(data.j)
 
 #Split by genre to combine/cbind back together later
 data.1 <- data.j[which(data.j$GenreID == 1),]
@@ -300,4 +310,10 @@ fit <- lm(Rspeed ~ Difficulty + Familarity + Interest + Value, data = data.combo
 summary(fit) #Interest and Value sig, but adj Rsquared is .008
 outlierTest(fit)
 
+#Rspeed
+data.combo$Rspeed <- data.combo$WordCount/data.combo$RawRT
 
+
+
+kruskal.test(data.combo$Rspeed ~ as.factor(data.combo$Familarity)) ##Alpha .09
+    

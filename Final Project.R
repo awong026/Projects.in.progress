@@ -459,6 +459,14 @@ summary(AIC.fit)
 1-pchisq(351.09,334) #pvalue is .249 so H0. Model is adequate for the data. 
 
 #Confusion Matrix to find Accuracy 
+#Create coonfustion matrix to assess fit of model
+predict <- predict(AIC.fit, type = "response")
+table(SR.MW$MindWandering, predict>0.5) # Creates a confusion matrix which assess the fit of a model
+
+###lOok into fitureing out % accuracy
+(57 + 125 + 68 +9)/(57 + 125 + 68 +9 + 62+ 21 + 3) #Correct 75% of the time
+
+
 
 #############################                                 Residuals                                      ###############################
 
@@ -487,7 +495,13 @@ summary(AIC.fit)
 1-pchisq(159.61,366) #pvalue is 1 so H0. Model is adequate for the data. 
 
 #Confusion Matrix to get Accuracy 
+#Confusion Matrix to find Accuracy 
+#Create coonfustion matrix to assess fit of model
+predict <- predict(AIC.fit, type = "response")
+table(SR.Boredom$Boredom, predict>0.5) # Creates a confusion matrix which assess the fit of a model
 
+###lOok into fitureing out % accuracy
+(16 + 42 + 69 + 84 + 65 +45)/(16 + 42 + 69 + 84 + 65 +45 + 36 + 5+4+2+1+3) #Correct 86% of the time
 #############################                                 Residuals                                      ###############################
 
 ####### Logistic Regression (Boredom)

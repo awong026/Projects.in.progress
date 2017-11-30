@@ -53,7 +53,6 @@ SR <- Sona_rating[,2:length(Sona_rating)]
 View(SR)
 
 str(SR)
-SR$GenreID <- as.factor(SR$GenreID)
 SR$Difficulty <- as.factor(SR$Difficulty)
 SR$Familarity <- as.factor(SR$Familarity)
 SR$Interest <- as.factor(SR$Interest)
@@ -334,11 +333,8 @@ boot.ci(boot.out, type = "perc") #Since H0 is 0 because difference of means shou
 #############################                       MAVOVA/ANOVA/Kruskia Wallis                                ###############################
    
 
-####### ANOVA & Kruskis Wallis (One Way) 
+####### Kruskal Wallis (One Way) 
 #We want to see if mean Rspeed level is the same for each Difficulty Rating Group.
-
-#Check if genreid is factor
-is.factor(SR$GenreID) #GenreID is not a factor yet
 
 ## Two assumptions to check 1. normal and 2. equal variances
 ## plot to see if the means look different
@@ -372,66 +368,12 @@ summary(fit) #Means are the same from looking at just the P value for F test sin
 #Don't reject H0: mean1 = mean2 = mean3 = mean 4 = mean 5 = mean 6
 
 
-##Since normality was questionable and we saw outliers we can use a non par test which is the 
+##Since normality was questionable and we saw outliers we can use a non par test which is the  (anova is really bad when there are outliers)
 #Kruskal-Wallis test which is based on ranks
 kruskal.test(data.combo$Rspeed ~ as.factor(data.combo$Difficulty))
 #Also don't reject H0 because pvalue = .37
 
 
-####### ANOVA & Kruskis Wallis (One Way) #2
-#We want to see if mean Rspeed level is the same for each Difficulty Rating Group.
-
-#Check if genreid is factor
-is.factor(SR$GenreID) #GenreID is not a factor yet
-
-## Two assumptions to check 1. normal and 2. equal variances
-## plot to see if the means look different
-## and look for outliers - Has a devestating effect on ANOVA so if if there are outliers, you don't want to use F test
-#plot
-boxplot(data.combo.nout$Rspeed ~ data.combo.nout$Interest) #Doesn't look at means are different, but it does look like there might be outliers
-
-##Look for normality
-qqnorm(data.combo$Rspeed[which(data.combo$Difficulty == 1)]) ##Normal plot for Rspeed if Difficulty = 1
-#Doesn't look like a line, but looks like a curve. ANOVA really only worries about if tails look weird
-qqnorm(data.combo$Rspeed[which(data.combo$Difficulty == 2)]) #Doesn't look like a line, but looks like a curve.
-qqnorm(data.combo$Rspeed[which(data.combo$Difficulty == 3)]) #Doesn't look like a line, but looks like a curve.
-qqnorm(data.combo$Rspeed[which(data.combo$Difficulty == 4)]) #Doesn't look like a line, but looks like a curve.Top could be an outlier
-qqnorm(data.combo$Rspeed[which(data.combo$Difficulty == 5)]) #Doesn't look like a line, but looks like a curve.. Top looks like there is an outlier
-qqnorm(data.combo$Rspeed[which(data.combo$Difficulty == 6)]) #Normal looking except there is an outlier at the top
-#Not sure if data is normally distributed, F test probably isn't a good test to run for this comparison. 
-
-##Look at variances. (Look to see if varaince is 10x bigger thna another. If they are then you don't use anova, but none of examples are that way)
-var(data.combo$Rspeed[which(data.combo$Difficulty == 1)]) 
-var(data.combo$Rspeed[which(data.combo$Difficulty == 2)]) 
-var(data.combo$Rspeed[which(data.combo$Difficulty == 3)]) 
-var(data.combo$Rspeed[which(data.combo$Difficulty == 4)]) 
-var(data.combo$Rspeed[which(data.combo$Difficulty == 5)]) 
-var(data.combo$Rspeed[which(data.combo$Difficulty == 6)]) 
-#So we can assume constant variances
-
-
-##fit the model (Creating anova) ##factor function really matters
-fit <- aov(data.combo$Rspeed ~ as.factor(data.combo$Interest))
-summary(fit) #Means are the same from looking at just the P value for F test since it's .3
-#Don't reject H0: mean1 = mean2 = mean3 = mean 4 = mean 5 = mean 6
-
-
-##Since normality was questionable and we saw outliers we can use a non par test which is the 
-#Kruskal-Wallis test which is based on ranks
-kruskal.test(data.combo$Rspeed ~ as.factor(data.combo$Interest))
-#Also don't reject H0 because pvalue = .49
-
-#Let's try taking out the outliers 
-library(car)
-outlierTest(fit)
-
-
-#Take out outliers
-data.combo.nout <- data.combo[-c(49, 110, 117, 114, 345,  118,  119, 120, 121, 122, 177, 238, 305, 353, 357, 355, 351,  359, 361, 349, 116, 115, 347),]
-head(data.combo.nout)
-fit <- aov(data.combo.nout$Rspeed ~ as.factor(data.combo.nout$Interest))
-
-kruskal.test(data.combo.nout$Rspeed ~ as.factor(data.combo.nout$Familarity))
 
 
 
@@ -474,7 +416,7 @@ table(SR.MW$MindWandering, predict>0.5) # Creates a confusion matrix which asses
 plot(AIC.fit$residuals) #Looks like no pattern, but crazy outliers
 
 
-####### Response is Boredom
+################################                     Response is Boredom
 SR.Boredom <- SR[!is.na(SR$Boredom),]
 View(SR.Boredom)
 fit <- glm(Boredom ~ GenreID + Difficulty + Familarity + Interest + Value, family = binomial, data = SR.Boredom)
@@ -505,32 +447,6 @@ table(SR.Boredom$Boredom, predict>0.5) # Creates a confusion matrix which assess
 #############################                                 Residuals                                      ###############################
 
 ####### Logistic Regression (Boredom)
-plot(AIC.fit$residuals) #Looks like no pattern, but crazy outliers
-
-
-####### Response is Interest
-fit <- glm(Interest ~ GenreID + Familarity + Difficulty + Value, family = binomial, data = SR)
-summary(fit)  #Sig are all Value and Some of the Difficulty values
-
-
-#Let's throw fit into StepAIC to find the "best"
-library(car)
-library(MASS)
-stepAIC(fit)
-
-#Try fitting "best" model
-AIC.fit <- glm(Interest ~ Value, family = binomial, data = SR)
-summary(AIC.fit)
-#AIC 251.82
-#Residual deviance: 239.82  on 369  degrees of freedom
-#Test pvalue
-1-pchisq(239.82,369) #pvalue is 1 so H0. Model is adequate for the data. 
-
-#Confusion Matrix to find Accuracy 
-
-#############################                                 Residuals                                      ###############################
-
-####### Logistic Regression (Interest)
 plot(AIC.fit$residuals) #Looks like no pattern, but crazy outliers
 
 

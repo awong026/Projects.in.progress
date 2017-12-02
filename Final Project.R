@@ -8,7 +8,6 @@ Sona <- read_csv("C:/Users/awong/Desktop/Memphis/Project/Sona.csv")
 View(Sona)
 
 
-
 #Sona_rating
 library(readr)
 Sona_rating <- read_csv("C:/Users/awong/Desktop/Memphis/Project/Sona_rating.csv")
@@ -373,6 +372,10 @@ summary(fit) #Means are the same from looking at just the P value for F test sin
 kruskal.test(data.combo$Rspeed ~ as.factor(data.combo$Difficulty))
 #Also don't reject H0 because pvalue = .37
 
+#To confirm findings even more let's try to do a mutliple comparison of the data and see if any pairs of data have different medians
+TukeyHSD(fit)
+plot(TukeyHSD(fit))
+
 
 
 
@@ -512,4 +515,15 @@ plot(resid)  ## Can't tell if pattern, doesn't look like it. But there are some 
 
 #Non - constant variances
 plot(fitted, resid) # Doesn't look like there is a pattern, but with outliers. 
+
+
+#############################                                 Citation                                      ###############################
+citation("readr")
+citation("corrplot")
+citation("dplyr")
+citation("quantreg")
+citation("boot")
+citation("car")
+citation("MASS")
+
 

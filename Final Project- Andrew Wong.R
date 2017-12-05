@@ -30,9 +30,8 @@ Summary(Sona_rating)
 ######## Correlation Plots
 #Check correlation (Sona)
 library(corrplot)
-cor(Sona[,C(2:length(Sona))])
-corrplot(cor(Sona))
-
+correlation <- cor(Sona[,c("GenreID", "RawRT", "WordCount", "Narrativity", "SyntacticSimplicity", "WordConcreteness","ReferentialCohesion", "DeepCohesion")])
+corrplot(correlation, method = "number")
 
 #############################                               Clean Data                                          ###############################
 
@@ -93,7 +92,7 @@ head(data.combo)
 data.combo$Rspeed <- data.combo$Comp$WordCount/data.combo$Comp$RawRT
 head(data.combo)
 #############################                           Hypothesis Testing                                      ###############################
-##Question 2: Different Rspeed between the Genres
+##Question : Different Rspeed between the Genres
 # 1 to 2
 #1 to 3
 #2 to 3
@@ -329,10 +328,10 @@ boot.ci(boot.out, type = "perc") #Since H0 is 0 because difference of means shou
 
 
 
-#############################                       MAVOVA/ANOVA/Kruskia Wallis                                ###############################
+#############################                       MAVOVA/ANOVA/Kruskal Wallis                                ###############################
    
 
-####### Kruskal Wallis (One Way) 
+####### Kruskal Wallis  
 #We want to see if mean Rspeed level is the same for each Difficulty Rating Group.
 
 ## Two assumptions to check 1. normal and 2. equal variances
@@ -342,6 +341,7 @@ boot.ci(boot.out, type = "perc") #Since H0 is 0 because difference of means shou
 boxplot(data.combo$Rspeed ~ data.combo$Difficulty) #Doesn't look at means are different, but it does look like there might be outliers
 
 ##Look for normality
+par(mfrow = c(2,3))
 qqnorm(data.combo$Rspeed[which(data.combo$Difficulty == 1)]) ##Normal plot for Rspeed if Difficulty = 1
 #Doesn't look like a line, but looks like a curve. ANOVA really only worries about if tails look weird
 qqnorm(data.combo$Rspeed[which(data.combo$Difficulty == 2)]) #Doesn't look like a line, but looks like a curve.
@@ -361,7 +361,7 @@ var(data.combo$Rspeed[which(data.combo$Difficulty == 6)])
 #So we can assume constant variances
 
 
-##fit the model (Creating anova) ##factor function really matters
+##fit the model (Creating anova) for practice/Fun. ##factor function really matters
 fit <- aov(data.combo$Rspeed ~ as.factor(data.combo$Difficulty))
 summary(fit) #Means are the same from looking at just the P value for F test since it's .3
 #Don't reject H0: mean1 = mean2 = mean3 = mean 4 = mean 5 = mean 6
@@ -373,6 +373,7 @@ kruskal.test(data.combo$Rspeed ~ as.factor(data.combo$Difficulty))
 #Also don't reject H0 because pvalue = .37
 
 #To confirm findings even more let's try to do a mutliple comparison of the data and see if any pairs of data have different medians
+par(mfrow=c(1,1))
 TukeyHSD(fit)
 plot(TukeyHSD(fit))
 
@@ -486,35 +487,6 @@ plot(resid)  ## Can't tell if pattern, doesn't look like it. But there are some 
 #Non - constant variances
 plot(fitted, resid) # Doesn't look like there is a pattern, but with outliers. 
 
-###### Response as Rspeed without abnormals  (Only Sona Data)
-pairs(Sona.nab[c("Rspeed", "Narrativity", "SyntacticSimplicity" , "WordConcreteness", "ReferentialCohesion", "DeepCohesion")]) #Looks like a lot of outliers
-
-model<- lm(Rspeed ~ Narrativity + SyntacticSimplicity + WordConcreteness + ReferentialCohesion + DeepCohesion , data = Sona.nab) 
-summary(model) #None are sig
-#adj. Rsquared is 7.7 e-05
-##Ftest pvalue is .37 ,so model is bad fit for data
-
-#StepAIC to find "best" model
-stepAIC(model)
-
-#StepAIC's best model
-model.AIC <- lm(Rspeed ~ SyntacticSimplicity + DeepCohesion , data = Sona.nab)
-summary(model.AIC)
-#AIC = -6581.53
-#adj R = .0002
-#Ftest pvalue is .21, so model is not good for data still if alpah is set to .05
-
-#############################                                 Residuals                                      ###############################
-
-####### Linear Regression
-fitted <- predict(model.AIC)
-resid <- residuals(model.AIC)
-
-qqnorm(resid)  ##Can't tell if normal, crazy outliers
-plot(resid)  ## Can't tell if pattern, doesn't look like it. But there are some crazy outliers
-
-#Non - constant variances
-plot(fitted, resid) # Doesn't look like there is a pattern, but with outliers. 
 
 
 #############################                                 Citation                                      ###############################
